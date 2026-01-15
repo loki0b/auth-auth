@@ -6,8 +6,8 @@ const app = express()
 const port = process.env.PORT
 
 app.use(express.json()) // parsing application/json
-app.use("/api/users", usersRoutes)
 app.use(cookieParser())
+app.use("/api/users", usersRoutes)
 
 app.listen(port, () => {
     console.log(`Listening on port ${port}`)

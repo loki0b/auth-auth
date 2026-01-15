@@ -38,7 +38,13 @@ router.post("/login", (req, res) => {
                     { expiresIn: "1h" }
                 )
                 
-                return res.status(200).cookie("auth_token", token).json({ status: "Login Successful"})
+                const cookieOptions = {
+                    httpOnly: true,
+                    maxAge: 60 * 60 * 1000, // 1h to ms
+                    sameSite: "strict"
+                }
+
+                return res.status(200).cookie("auth_token", token, cookieOptions).json({ status: "Login Successful"})
             }
             else return res.status(200).json({ status: "Incorrect Password" })             
         })

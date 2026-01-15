@@ -46,7 +46,7 @@ router.post("/login", (req, res) => {
 
                 return res.status(200).cookie("auth_token", token, cookieOptions).json({ status: "Login Successful"})
             }
-            else return res.status(200).json({ status: "Incorrect Password" })             
+            else return res.status(401).json({ status: "Incorrect Password" })             
         })
     })
 })

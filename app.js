@@ -1,6 +1,6 @@
 const express = require('express')
 const cookieParser = require("cookie-parser")
-const usersRoutes = require("./users")
+const usersRoutes = require("./routes/users")
 
 const app = express()
 const port = process.env.PORT

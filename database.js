@@ -17,4 +17,13 @@ async function dbGet(sql, params) {
     });
 }
 
-module.exports = db
+function dbRun(sql, params) {
+    return new Promise((resolve, reject) => {
+        db.run(sql, params, function(err) {
+            if (err) reject(err);
+            resolve(this.lastID);
+        });
+    });
+}
+
+export { dbGet, dbRun };

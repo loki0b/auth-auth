@@ -7,7 +7,7 @@ import middleware from "../middleware.js";
 const usersRouter = express.Router();
 const saltRounds = 10;
 
-usersRouter.get("/profile", middleware, async (req, res) => {
+usersRouter.get("/profile", middleware, async (req, res, next) => {
     try {
         const sql = "SELECT * FROM users WHERE username = ?";
         const row = await dbGet(sql, [req.user]);
@@ -16,11 +16,11 @@ usersRouter.get("/profile", middleware, async (req, res) => {
 
         return res.status(200).json({ username: username });
     } catch (err) {
-        return res.status(500).json({ error: "Server Error" });
+        next(err);
     }
 });
 
-usersRouter.post("/register", async (req, res) => {;
+usersRouter.post("/register", async (req, res, next) => {;
     const { username, password } = req.body;
 
     try {
@@ -31,11 +31,11 @@ usersRouter.post("/register", async (req, res) => {;
 
         return res.status(200).json({ status: "Account Successful Created"});
     } catch(err) {
-       return res.status(500).json({ error: "Server Error" }); 
+       next(err);
     }
 });
 
-usersRouter.post("/login", async (req, res) => {;
+usersRouter.post("/login", async (req, res, next) => {;
     const { username, password } = req.body;
 
     try {
@@ -61,7 +61,7 @@ usersRouter.post("/login", async (req, res) => {;
 
         return res.status(200).cookie("auth_token", token, cookieOptions).json({ status: "Login Successful"});
     } catch (err) {
-        return res.status(500).json({ error: "Server Error" });
+        next(err);
     }
 });
 

@@ -35,38 +35,36 @@ router.post("/register", async (req, res) => {;
     } catch(err) {
        return res.status(500).json({ error: "Server Error" }); 
     }
-
-
 });
 
-router.post("/login", (req, res) => {;
+router.post("/login", async (req, res) => {;
     const { username, password } = req.body;
 
-    db.get("SELECT * FROM users WHERE username = ?", [username], (err, row) => {;
-        if (err) return res.status(500).json({ error: "Server Error" });
+    try {
+        const sql = "SELECT * FROM users WHERE username = ?";
+        const row = await dbGet(sql, [username]);
+
         if (!row) return res.status(404).json({ error: "user not found" });
         
-        bcrypt.compare(password, row.password, (compareErr, result) => {;
-            if (compareErr) return res.status(500).json({ error: "Server Error"});
+        const equal = await bcrypt.compare(password, row.password);
+        if (!equal) return res.status(401).json({ status: "Incorrect Password" });
 
-            if (result) {
-                const token = jwt.sign(
+        const token = jwt.sign(
                     { sub: row.username },
                     process.env.JWT_SECRET,
                     { expiresIn: "1h" }
                 )
                 
-                const cookieOptions = {
-                    httpOnly: true,
-                    maxAge: 60 * 60 * 1000, // 1h to ms
-                    sameSite: "strict"
-                }
+        const cookieOptions = {
+            httpOnly: true,
+            maxAge: 60 * 60 * 1000, // 1h to ms
+            sameSite: "strict"
+        }
 
-                return res.status(200).cookie("auth_token", token, cookieOptions).json({ status: "Login Successful"});
-            }
-            else return res.status(401).json({ status: "Incorrect Password" });
-        });
-    });
+        return res.status(200).cookie("auth_token", token, cookieOptions).json({ status: "Login Successful"});
+    } catch (err) {
+        return res.status(500).json({ error: "Server Error" });
+    }
 });
 
 router.post("/logout", middleware, (req, res) => {

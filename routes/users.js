@@ -9,13 +9,17 @@ const middleware = require("../middleware");
 const router = express.Router();
 const saltRounds = 10;
 
-router.get("/profile", middleware, (req, res) => {
-    db.get("SELECT * FROM users WHERE username = ?", [req.user], (err, row) => {
-        if (err) return res.status(500).json({ error: "Server Error" });
+router.get("/profile", middleware, async (req, res) => {
+    try {
+        const sql = "SELECT * FROM users WHERE username = ?";
+        const row = await dbGet(sql, [req.user]);
 
-        const { username, password } = row;
-        res.status(200).json({ username: username });
-    })
+        const { username } = row;
+
+        return res.status(200).json({ username: username });
+    } catch (err) {
+        return res.status(500).json({ error: "Server Error" });
+    }
 });
 
 router.post("/register", async (req, res) => {;

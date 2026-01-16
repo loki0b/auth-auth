@@ -1,15 +1,13 @@
-import { dbGet, dbRun } from '../database';
+import express from "express";
+import { hash, compare } from "bcrypt";
+import jsonwebtoken from "jsonwebtoken";
+import { dbGet, dbRun } from "../database.js";
+import middleware from "../middleware.js";
 
-const express = require('express');
-const bcrypt = require('bcrypt');
-const jwt = require("jsonwebtoken");
-const db = require('../database');
-const middleware = require("../middleware");
-
-const router = express.Router();
+const usersRouter = express.Router();
 const saltRounds = 10;
 
-router.get("/profile", middleware, async (req, res) => {
+usersRouter.get("/profile", middleware, async (req, res) => {
     try {
         const sql = "SELECT * FROM users WHERE username = ?";
         const row = await dbGet(sql, [req.user]);
@@ -22,11 +20,11 @@ router.get("/profile", middleware, async (req, res) => {
     }
 });
 
-router.post("/register", async (req, res) => {;
+usersRouter.post("/register", async (req, res) => {;
     const { username, password } = req.body;
 
     try {
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
+        const hashedPassword = await hash(password, saltRounds);
         const sql = "INSERT INTO users (username, password) VALUES (?, ?)";
 
         await dbRun(sql, [username, hashedPassword]); 
@@ -37,7 +35,7 @@ router.post("/register", async (req, res) => {;
     }
 });
 
-router.post("/login", async (req, res) => {;
+usersRouter.post("/login", async (req, res) => {;
     const { username, password } = req.body;
 
     try {
@@ -46,10 +44,10 @@ router.post("/login", async (req, res) => {;
 
         if (!row) return res.status(404).json({ error: "user not found" });
         
-        const equal = await bcrypt.compare(password, row.password);
+        const equal = await compare(password, row.password);
         if (!equal) return res.status(401).json({ status: "Incorrect Password" });
 
-        const token = jwt.sign(
+        const token = jsonwebtoken.sign(
                     { sub: row.username },
                     process.env.JWT_SECRET,
                     { expiresIn: "1h" }
@@ -67,8 +65,8 @@ router.post("/login", async (req, res) => {;
     }
 });
 
-router.post("/logout", middleware, (req, res) => {
+usersRouter.post("/logout", middleware, (req, res) => {
     res.clearCookie("auth_token").status(200).json({ status: "Logout Successfully" });
 })
 
-module.exports = router
+export default usersRouter;

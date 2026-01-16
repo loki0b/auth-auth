@@ -1,3 +1,5 @@
+import { dbGet, dbRun } from '../database';
+
 const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken");
@@ -16,19 +18,21 @@ router.get("/profile", middleware, (req, res) => {
     })
 });
 
-router.post("/register", (req, res) => {;
+router.post("/register", async (req, res) => {;
     const { username, password } = req.body;
 
-    bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
-        if (err) return res.status(500).json({ error: "Server Error" })
+    try {
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+        const sql = "INSERT INTO users (username, password) VALUES (?, ?)";
 
-        const sql = 'INSERT INTO users (username, password) VALUES (?, ?)'
-        db.run(sql, [username, hashedPassword], (dbErr) => {
-            if (dbErr) return res.status(500).json({ error: "Server Error" });
-            
-            return res.status(200).json({ status: "Account Successful Created"});
-        });
-    });
+        await dbRun(sql, [username, hashedPassword]); 
+
+        return res.status(200).json({ status: "Account Successful Created"});
+    } catch(err) {
+       return res.status(500).json({ error: "Server Error" }); 
+    }
+
+
 });
 
 router.post("/login", (req, res) => {;

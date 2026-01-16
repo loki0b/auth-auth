@@ -61,4 +61,8 @@ router.post("/login", (req, res) => {;
     });
 });
 
+router.post("/logout", middleware, (req, res) => {
+    res.clearCookie("auth_token").status(200).json({ status: "Logout Successfully" });
+})
+
 module.exports = router
